@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Plugin(
         id = "safeblock",
@@ -128,15 +129,16 @@ public class Safeblock {
         }
 
         Location<World> loc = optLoc.get();
+        UUID worlduuid = loc.getExtent().getUniqueId();
         Vector3i pos = loc.getBlockPosition();
-        checkAndSendMessage(pos, player);
+        checkAndSendMessage(worlduuid.toString(), pos, player);
 
         return;
     }
 
-    public void checkAndSendMessage(Vector3i pos, Player player) {
+    public void checkAndSendMessage(String world_uuid, Vector3i pos, Player player) {
         try {
-            List<BLOCKLOG> logList = db.selectLog(pos);
+            List<BLOCKLOG> logList = db.selectLog(world_uuid, pos);
             int count = 0;
             UserManager um = UserManager.getInstance();
             player.sendMessage(Text.of("---------------------"));
@@ -176,6 +178,8 @@ public class Safeblock {
             Optional<Location<World>> optLoc = snapshot.getLocation();
             if (optLoc.isPresent()) {
                 Location<World> loc = optLoc.get();
+                UUID worldUuid = loc.getExtent().getUniqueId();
+                log.setWorld_uuid(worldUuid.toString());
                 Vector3i pos = loc.getBlockPosition();
                 log.setPosition(pos);
             }
@@ -188,10 +192,8 @@ public class Safeblock {
         try {
             int size = list.size();
             if (size == 1) {
-                logger.debug("Log single insert");
                 db.insertLog(list.get(0));
             } else if(size > 1) {
-                logger.debug("Log multiple insert");
                 db.insertLog(list);
             }
         } catch (SQLException e) {

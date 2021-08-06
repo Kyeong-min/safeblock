@@ -29,17 +29,18 @@ public class H2EmbeddedDB {
      * @param v 좌표
      * @return {@link BLOCKLOG} 리스트
      */
-    public List<BLOCKLOG> selectLog(Vector3i v) throws SQLException {
-        String qry = "SELECT * FROM BLOCKLOG WHERE X = ? AND Y = ? AND Z = ?";
+    public List<BLOCKLOG> selectLog(String world_uuid, Vector3i v) throws SQLException {
+        String qry = "SELECT * FROM BLOCKLOG WHERE WORLD_UUID = ?, X = ? AND Y = ? AND Z = ?";
 
         List<BLOCKLOG> logs = new ArrayList<>();
         PreparedStatement pstat = null;
         ResultSet rs = null;
         try {
             pstat = connection.prepareStatement(qry);
-            pstat.setInt(1, v.getX());
-            pstat.setInt(2, v.getY());
-            pstat.setInt(3, v.getZ());
+            pstat.setString(1, world_uuid);
+            pstat.setInt(2, v.getX());
+            pstat.setInt(3, v.getY());
+            pstat.setInt(4, v.getZ());
 
             rs = pstat.executeQuery();
             while (rs.next()) {
@@ -60,14 +61,14 @@ public class H2EmbeddedDB {
     public void insertLog(List<BLOCKLOG> logs) throws SQLException {
         connection.setAutoCommit(false);
         for (BLOCKLOG log : logs) {
-            insertLog(log.getUuid(), log.getPosition(), log.getType(), log.getDatetime());
+            insertLog(log.getUuid(), log.getWorld_uuid(), log.getPosition(), log.getType(), log.getDatetime());
         }
         connection.commit();
         connection.setAutoCommit(true);
     }
 
     public void insertLog(BLOCKLOG log) throws SQLException {
-        insertLog(log.getUuid(), log.getPosition(), log.getType(), log.getDatetime());
+        insertLog(log.getUuid(), log.getWorld_uuid(), log.getPosition(), log.getType(), log.getDatetime());
     }
 
     /**
@@ -79,18 +80,19 @@ public class H2EmbeddedDB {
      * @param instant 이벤트 시각
      * @throws SQLException SQL Exception
      */
-    public void insertLog(String uuid, Vector3i v, BLOCKLOG.EventType evt, Instant instant) throws SQLException {
-        String qry = "INSERT INTO BLOCKLOG (UUID, X, Y, Z, EVENTTYPE, DATETIME) VALUES (?, ?, ?, ?, ?, ?)";
+    public void insertLog(String uuid, String world_uuid, Vector3i v, BLOCKLOG.EventType evt, Instant instant) throws SQLException {
+        String qry = "INSERT INTO BLOCKLOG (UUID, WORLD_UUID, X, Y, Z, EVENTTYPE, DATETIME) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement pstat = null;
         try {
 
             pstat = connection.prepareStatement(qry);
             pstat.setString(1, uuid);
-            pstat.setInt(2, v.getX());
-            pstat.setInt(3, v.getY());
-            pstat.setInt(4, v.getZ());
-            pstat.setInt(5, evt.getValue());
-            pstat.setTimestamp(6, Timestamp.from(instant));
+            pstat.setString(2, world_uuid);
+            pstat.setInt(3, v.getX());
+            pstat.setInt(4, v.getY());
+            pstat.setInt(5, v.getZ());
+            pstat.setInt(6, evt.getValue());
+            pstat.setTimestamp(7, Timestamp.from(instant));
 
             int result = pstat.executeUpdate();
             if (result == 0)

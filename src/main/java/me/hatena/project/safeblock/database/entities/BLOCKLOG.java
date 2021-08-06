@@ -20,6 +20,9 @@ public class BLOCKLOG {
     private String uuid;
     @Getter
     @Setter
+    private String world_uuid;
+    @Getter
+    @Setter
     private int x;
     @Getter
     @Setter
@@ -38,11 +41,12 @@ public class BLOCKLOG {
     public BLOCKLOG(ResultSet rs) throws SQLException {
         idx = rs.getInt(1);
         uuid = rs.getString(2);
-        x = rs.getInt(3);
-        y = rs.getInt(4);
-        z = rs.getInt(5);
-        type = EventType.valueOf(rs.getInt(6)).orElse(EventType.UNKNOWN);
-        datetime = rs.getTimestamp(7).toInstant();
+        world_uuid = rs.getString(3);
+        x = rs.getInt(4);
+        y = rs.getInt(5);
+        z = rs.getInt(6);
+        type = EventType.valueOf(rs.getInt(7)).orElse(EventType.UNKNOWN);
+        datetime = rs.getTimestamp(8).toInstant();
     }
 
     public void setPosition(Vector3i pos) {

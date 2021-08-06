@@ -42,8 +42,9 @@ public class CheckLocationCommand extends BaseCommand {
             src.sendMessage(Text.of("좌표 정보가 없습니다."));
             return CommandResult.empty();
         }
+        UUID worlduuid = player.getWorld().getUniqueId();
         Vector3i vec = optVec.get();
-        Safeblock.getInstance().checkAndSendMessage(vec, player);
+        Safeblock.getInstance().checkAndSendMessage(worlduuid.toString(), vec, player);
 
         return CommandResult.success();
     }
